@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Systema Drill Library</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: Georgia, 'Times New Roman', serif;
+      background: #f7f5f0;
+      color: #222;
+      line-height: 1.65;
+    }
+
+    header {
+      background: #1a1a1a;
+      color: #e8e4dc;
+      padding: 2rem 1.5rem 1.6rem;
+    }
+
+    header h1 {
+      font-size: 1.6rem;
+      font-weight: normal;
+      letter-spacing: 0.02em;
+    }
+
+    header p {
+      margin-top: 0.3rem;
+      font-size: 0.9rem;
+      color: #aaa;
+      font-style: italic;
+    }
+
+    nav {
+      background: #2d2d2d;
+      padding: 0.8rem 1.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.3rem 0;
+      align-items: baseline;
+    }
+
+    nav span.label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #777;
+      margin-right: 0.6rem;
+      font-family: system-ui, sans-serif;
+    }
+
+    nav a {
+      color: #bbb;
+      text-decoration: none;
+      font-size: 0.85rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 3px;
+      font-family: system-ui, sans-serif;
+      white-space: nowrap;
+    }
+
+    nav a:hover {
+      background: #444;
+      color: #eee;
+    }
+
+    nav a + a::before {
+      content: '·';
+      margin-right: 0.5rem;
+      color: #555;
+    }
+
+    main {
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+
+    .skill-section {
+      margin-bottom: 2.8rem;
+    }
+
+    .skill-section h2 {
+      font-size: 1rem;
+      font-weight: bold;
+      font-family: system-ui, sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #555;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 0.4rem;
+      margin-bottom: 1rem;
+    }
+
+    .drill-card {
+      background: #fff;
+      border: 1px solid #e0dbd0;
+      border-radius: 5px;
+      padding: 1.1rem 1.3rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .drill-card + .drill-card {
+      margin-top: 0.6rem;
+    }
+
+    .drill-name {
+      font-size: 1.05rem;
+      font-weight: bold;
+      margin-bottom: 0.25rem;
+    }
+
+    .drill-meta {
+      font-family: system-ui, sans-serif;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: #999;
+      margin-bottom: 0.65rem;
+    }
+
+    .drill-meta .format-solo   { color: #5a7a5a; }
+    .drill-meta .format-partner { color: #5a5a8a; }
+
+    .drill-description {
+      font-size: 0.95rem;
+      color: #333;
+    }
+
+    .drill-notes {
+      margin-top: 0.7rem;
+      font-size: 0.87rem;
+      color: #666;
+      font-style: italic;
+      padding-left: 0.8rem;
+      border-left: 3px solid #ddd;
+    }
+
+    #status {
+      color: #888;
+      font-style: italic;
+      font-family: system-ui, sans-serif;
+      font-size: 0.9rem;
+      padding: 2rem 0;
+    }
+
+    .error {
+      background: #fff0f0;
+      border: 1px solid #fcc;
+      border-radius: 4px;
+      padding: 1rem 1.2rem;
+      color: #900;
+      font-family: system-ui, sans-serif;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Systema Drill Library</h1>
+  <p>Browse drills by skill</p>
+</header>
+
+<nav id="skill-nav"><span class="label">Skills</span></nav>
+
+<main>
+  <div id="content"><p id="status">Loading drills…</p></div>
+</main>
+
+<script>
+  function cap(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+
+  function clean(str) {
+    return str.replace(/\s+/g, ' ').trim();
+  }
+
+  function slug(str) {
+    return str.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  }
+
+  async function init() {
+    const content = document.getElementById('content');
+    const skillNav = document.getElementById('skill-nav');
+
+    let xml;
+    try {
+      const res = await fetch('systema-drill-library.xml');
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const text = await res.text();
+      xml = new DOMParser().parseFromString(text, 'application/xml');
+      const parseErr = xml.querySelector('parsererror');
+      if (parseErr) throw new Error('XML parse error');
+    } catch (e) {
+      content.innerHTML = `<div class="error">Could not load drill data: ${e.message}</div>`;
+      return;
+    }
+
+    const drills = Array.from(xml.querySelectorAll('drill')).map(d => ({
+      name:        clean(d.querySelector('name').textContent),
+      skills:      clean(d.querySelector('skills').textContent)
+                     .split(',').map(s => s.trim()).filter(Boolean),
+      format:      clean(d.querySelector('format').textContent),
+      description: clean(d.querySelector('description').textContent),
+      notes:       d.querySelector('notes')
+                     ? clean(d.querySelector('notes').textContent)
+                     : '',
+    }));
+
+    // Build skill → drills map
+    const map = {};
+    for (const drill of drills) {
+      for (const skill of drill.skills) {
+        if (!map[skill]) map[skill] = [];
+        map[skill].push(drill);
+      }
+    }
+    const skills = Object.keys(map).sort((a, b) => a.localeCompare(b));
+
+    // Populate skill nav
+    const navLabel = skillNav.querySelector('.label');
+    for (const skill of skills) {
+      const a = document.createElement('a');
+      a.href = `#${slug(skill)}`;
+      a.textContent = cap(skill);
+      skillNav.appendChild(a);
+    }
+
+    // Render skill sections
+    content.innerHTML = '';
+    for (const skill of skills) {
+      const section = document.createElement('div');
+      section.className = 'skill-section';
+      section.id = slug(skill);
+
+      const h2 = document.createElement('h2');
+      h2.textContent = cap(skill);
+      section.appendChild(h2);
+
+      for (const drill of map[skill]) {
+        const card = document.createElement('div');
+        card.className = 'drill-card';
+
+        const formatClass = drill.format === 'solo' ? 'format-solo' : 'format-partner';
+        card.innerHTML = `
+          <div class="drill-name">${drill.name}</div>
+          <div class="drill-meta"><span class="${formatClass}">${cap(drill.format)}</span></div>
+          <div class="drill-description">${drill.description}</div>
+          ${drill.notes ? `<div class="drill-notes">${drill.notes}</div>` : ''}
+        `;
+        section.appendChild(card);
+      }
+
+      content.appendChild(section);
+    }
+  }
+
+  init();
+</script>
+
+</body>
+</html>
