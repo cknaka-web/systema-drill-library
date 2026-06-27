@@ -7,6 +7,8 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    html { scroll-behavior: smooth; }
+
     body {
       font-family: Georgia, 'Times New Roman', serif;
       background: #f7f5f0;
@@ -78,8 +80,10 @@
       padding: 2rem 1.5rem 4rem;
     }
 
+    /* ── Skill index sections ── */
+
     .skill-section {
-      margin-bottom: 2.8rem;
+      margin-bottom: 2rem;
     }
 
     .skill-section h2 {
@@ -91,7 +95,47 @@
       color: #555;
       border-bottom: 1px solid #ddd;
       padding-bottom: 0.4rem;
-      margin-bottom: 1rem;
+      margin-bottom: 0.7rem;
+    }
+
+    .drill-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .drill-list li {
+      padding: 0.15rem 0;
+    }
+
+    .drill-list li::before {
+      content: '→';
+      margin-right: 0.5rem;
+      color: #bbb;
+      font-style: normal;
+    }
+
+    .drill-list a {
+      color: #3a3a7a;
+      text-decoration: none;
+      font-size: 0.97rem;
+    }
+
+    .drill-list a:hover {
+      text-decoration: underline;
+    }
+
+    /* ── All Drills section ── */
+
+    .all-drills-heading {
+      font-size: 1rem;
+      font-weight: bold;
+      font-family: system-ui, sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #555;
+      border-bottom: 2px solid #bbb;
+      padding-bottom: 0.4rem;
+      margin: 3rem 0 1.2rem;
     }
 
     .drill-card {
@@ -99,11 +143,13 @@
       border: 1px solid #e0dbd0;
       border-radius: 5px;
       padding: 1.1rem 1.3rem;
-      margin-bottom: 0.75rem;
+      margin-bottom: 1rem;
+      scroll-margin-top: 1rem;
     }
 
-    .drill-card + .drill-card {
-      margin-top: 0.6rem;
+    .drill-card:target {
+      border-color: #5a5a8a;
+      box-shadow: 0 0 0 3px #5a5a8a1a;
     }
 
     .drill-name {
@@ -119,10 +165,22 @@
       letter-spacing: 0.09em;
       color: #999;
       margin-bottom: 0.65rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem 1rem;
+      align-items: baseline;
     }
 
-    .drill-meta .format-solo   { color: #5a7a5a; }
-    .drill-meta .format-partner { color: #5a5a8a; }
+    .format-solo    { color: #5a7a5a; }
+    .format-partner { color: #5a5a8a; }
+
+    .drill-skills-meta {
+      color: #aaa;
+      font-style: italic;
+      text-transform: none;
+      letter-spacing: 0;
+      font-size: 0.78rem;
+    }
 
     .drill-description {
       font-size: 0.95rem;
@@ -136,14 +194,6 @@
       font-style: italic;
       padding-left: 0.8rem;
       border-left: 3px solid #ddd;
-    }
-
-    #status {
-      color: #888;
-      font-style: italic;
-      font-family: system-ui, sans-serif;
-      font-size: 0.9rem;
-      padding: 2rem 0;
     }
 
     .error {
@@ -166,8 +216,8 @@
 
 <nav id="skill-nav"><span class="label">Skills</span></nav>
 
-<main>
-  <div id="content"><p id="status">Loading drills…</p></div>
+<main id="content">
+  <p style="color:#888;font-style:italic;font-family:system-ui,sans-serif;font-size:.9rem;padding:2rem 0">Loading drills…</p>
 </main>
 
 <script>
@@ -184,7 +234,7 @@
   }
 
   async function init() {
-    const content = document.getElementById('content');
+    const content  = document.getElementById('content');
     const skillNav = document.getElementById('skill-nav');
 
     let xml;
@@ -193,8 +243,7 @@
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const text = await res.text();
       xml = new DOMParser().parseFromString(text, 'application/xml');
-      const parseErr = xml.querySelector('parsererror');
-      if (parseErr) throw new Error('XML parse error');
+      if (xml.querySelector('parsererror')) throw new Error('XML parse error');
     } catch (e) {
       content.innerHTML = `<div class="error">Could not load drill data: ${e.message}</div>`;
       return;
@@ -221,8 +270,7 @@
     }
     const skills = Object.keys(map).sort((a, b) => a.localeCompare(b));
 
-    // Populate skill nav
-    const navLabel = skillNav.querySelector('.label');
+    // Skill jump-nav
     for (const skill of skills) {
       const a = document.createElement('a');
       a.href = `#${slug(skill)}`;
@@ -230,8 +278,9 @@
       skillNav.appendChild(a);
     }
 
-    // Render skill sections
     content.innerHTML = '';
+
+    // Skill index sections — name links only
     for (const skill of skills) {
       const section = document.createElement('div');
       section.className = 'skill-section';
@@ -241,21 +290,38 @@
       h2.textContent = cap(skill);
       section.appendChild(h2);
 
+      const ul = document.createElement('ul');
+      ul.className = 'drill-list';
       for (const drill of map[skill]) {
-        const card = document.createElement('div');
-        card.className = 'drill-card';
-
-        const formatClass = drill.format === 'solo' ? 'format-solo' : 'format-partner';
-        card.innerHTML = `
-          <div class="drill-name">${drill.name}</div>
-          <div class="drill-meta"><span class="${formatClass}">${cap(drill.format)}</span></div>
-          <div class="drill-description">${drill.description}</div>
-          ${drill.notes ? `<div class="drill-notes">${drill.notes}</div>` : ''}
-        `;
-        section.appendChild(card);
+        const li = document.createElement('li');
+        li.innerHTML = `<a href="#drill-${slug(drill.name)}">${drill.name}</a>`;
+        ul.appendChild(li);
       }
-
+      section.appendChild(ul);
       content.appendChild(section);
+    }
+
+    // All Drills — canonical cards
+    const heading = document.createElement('h2');
+    heading.className = 'all-drills-heading';
+    heading.textContent = 'All Drills';
+    content.appendChild(heading);
+
+    for (const drill of drills) {
+      const formatClass = drill.format === 'solo' ? 'format-solo' : 'format-partner';
+      const card = document.createElement('div');
+      card.className = 'drill-card';
+      card.id = `drill-${slug(drill.name)}`;
+      card.innerHTML = `
+        <div class="drill-name">${drill.name}</div>
+        <div class="drill-meta">
+          <span class="${formatClass}">${cap(drill.format)}</span>
+          <span class="drill-skills-meta">${drill.skills.map(cap).join(' · ')}</span>
+        </div>
+        <div class="drill-description">${drill.description}</div>
+        ${drill.notes ? `<div class="drill-notes">${drill.notes}</div>` : ''}
+      `;
+      content.appendChild(card);
     }
   }
 
