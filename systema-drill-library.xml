@@ -1,0 +1,53 @@
+<systema_library>
+
+<principles>
+  <note>
+    These are foundational qualities that apply across most/all Systema drills. Individual drill entries should reference these rather than re-explaining them, unless a drill requires a notable variation.
+  </note>
+  <breathing>Standard pattern: in through the nose, out through the mouth, maintained continuously through movement.</breathing>
+  <posture>Suspended from the top of the head by an "invisible string from the heavens" — similar to Tai Chi's description of posture.</posture>
+  <relaxation>The body ("the meat") hangs relaxed from this suspended structure. Tension anywhere is the thing to watch for and remove.</relaxation>
+  <heaviness_and_lightness>A paradoxical dual quality — light from the head-suspension, heavy from full-body relaxation with no excess tension.</heaviness_and_lightness>
+  <comfort_not_escape>The guiding principle in response/movement drills is to move toward a comfortable, structurally sound position — not to flee or avoid contact.</comfort_not_escape>
+  <partner_drill_convention>
+    For two-person drills, roles are named using Aikido convention: the Uke initiates the action; the Nage responds.
+  </partner_drill_convention>
+</principles>
+
+<drill>
+  <name>Slow Push-Ups</name>
+  <skills>relaxation, tension awareness, breath control</skills>
+  <format>solo</format>
+  <description>
+    A standard push-up performed very slowly, with as little muscular tension as possible anywhere except the fist-to-floor contact point. Total rep time can range from a few seconds to a minute or more. Head can hang forward and body can droop rather than staying rigidly straight. Apply fundamental principles throughout, especially breathing and relaxation.
+  </description>
+  <notes>
+    Common tension points to watch: neck and shoulders.
+  </notes>
+</drill>
+
+<drill>
+  <name>Push Response — Whole Body Movement (Basic)</name>
+  <skills>whole body movement, structural integrity under pressure, relaxation under contact, comfort not escape</skills>
+  <format>partner</format>
+  <description>
+    Uke pushes Nage with one hand. Nage moves the whole body minimally to absorb/redirect the push, primarily by repositioning the feet, rather than twisting the pushed body part in isolation.
+  </description>
+  <notes>
+    Key fault: deforming the body in response to the push. Correct response: move the feet to find a comfortable, structurally sound position.
+  </notes>
+</drill>
+
+<drill>
+  <name>Center Line Redirect — "Change the Story"</name>
+  <skills>change the story (redirecting force back to source), whole body movement, move only as much as needed, comfort not escape, structural integrity under pressure</skills>
+  <format>partner</format>
+  <description>
+    Uke places a fist on the Nage's core and pushes toward centerline with steadily increasing pressure. Nage changes the angle of contact just enough to redirect the force back into the Uke's own wrist, elbow, or shoulder.
+  </description>
+  <notes>
+    Basic/foundational version; variations increase speed.
+  </notes>
+</drill>
+
+</systema_library>
